@@ -36,6 +36,9 @@ export const TextWithGlossaryTooltips = ({ text }) => {
   const glossaryterms = useSelector(
     (state) => state.glossarytooltipterms?.result?.items,
   );
+  const matched = useSelector(
+    (state) => state.glossarytooltipterms?.matched,
+  );
   const location = useLocation();
 
   // no tooltips if user opted out
@@ -51,9 +54,13 @@ export const TextWithGlossaryTooltips = ({ text }) => {
   }
 
   let result = [{ type: 'text', val: text }];
+  console.log(matched);
   if (glossaryterms !== undefined) {
     glossaryterms.forEach((term) => {
       result = result.map((chunk) => {
+        if (term.term in matched) {
+          return chunk;
+        }
         if (chunk.type === 'text') {
           let new_chunk = [];
           // regex word boundary \b ignores umlauts and other non ascii characters.
@@ -68,7 +75,6 @@ export const TextWithGlossaryTooltips = ({ text }) => {
           while (true) {
             let res = regExpTerm.exec(chunk.val);
             if (res === null) {
-              new_chunk.push({ type: 'text', val: chunk_val.slice(index) });
               break;
             }
             if (res.index > 0) {
@@ -79,7 +85,11 @@ export const TextWithGlossaryTooltips = ({ text }) => {
               val: res[0],
             });
             index = res.index + res[0].length;
+            // TODO make this configurable.
+            matched[term.term] = true;
           }
+          // Push the remainder.
+          new_chunk.push({ type: 'text', val: chunk_val.slice(index) });
           chunk = new_chunk;
         }
         return chunk;

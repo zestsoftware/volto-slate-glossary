@@ -5,6 +5,7 @@ const initialState = {
   hasErrror: false,
   result: [],
   loadingResults: false,
+  matched: {},
 };
 
 export const glossarytermsReducer = (state = initialState, action = {}) => {
